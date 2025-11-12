@@ -263,7 +263,6 @@
           }
         });
 
-        // --- Script de Upload (Envia a requisição e captura o erro) ---
        uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -271,7 +270,6 @@
         const token = localStorage.getItem('token');
         const formData = new FormData();
 
-        // 1. VALIDAÇÃO (Isto já funciona para você)
         if (files.length === 0) {
             uploadMessageBox.style.display = 'block';
             uploadMessageBox.className = 'message-box error';
@@ -279,7 +277,6 @@
             return;
         }
 
-        // Validação de login
         if (!token) {
             uploadMessageBox.style.display = 'block';
             uploadMessageBox.className = 'message-box error';
@@ -287,13 +284,11 @@
             return;
         }
 
-        // Prepara os arquivos
         for (let i = 0; i < files.length; i++) {
             formData.append('meusArquivos', files[i]);
         }
 
         try {
-            // 2. Tenta enviar para o servidor
             const response = await fetch('http://localhost:3000/upload', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
@@ -302,32 +297,27 @@
 
             // 3. VERIFICA SE A RESPOSTA NÃO FOI OK (ex: 401, 403, 500)
             if (!response.ok) {
-                // O servidor respondeu com erro (ex: 401 - Não Autorizado)
                 let errorMessage = 'Erro ao enviar. Tente fazer login novamente.'; // Mensagem padrão
                 
                 try {
-                    // Tenta ler o JSON de erro que o server.js enviou
                     const data = await response.json();
                     if (data.error) {
-                        errorMessage = data.error; // Ex: "Acesso negado. Token não fornecido."
+                        errorMessage = data.error; 
                     }
                 } catch (jsonError) {
-                    // Se o servidor enviar um erro sem JSON, caímos aqui
                     console.error("Não foi possível ler o JSON da resposta de erro:", jsonError);
                 }
 
-                // 4. MOSTRA A MENSAGEM DE ERRO (EM VERMELHO) NO FRONTEND
                 uploadMessageBox.textContent = errorMessage;
                 uploadMessageBox.className = 'message-box error';
                 uploadMessageBox.style.display = 'block';
 
-                // 5. Se o erro for de autorização, desloga o usuário da UI
                 if (response.status === 401 || response.status === 403) {
                     localStorage.removeItem('token');
                     localStorage.removeItem('username');
                     atualizarUI();
                 }
-                return; // Para a execução aqui
+                return; 
             }
 
             // 6. SE A RESPOSTA FOI OK (Sucesso 200)
@@ -338,7 +328,6 @@
             uploadForm.reset();
 
         } catch (networkError) {
-            // 7. Se o 'fetch' falhar (servidor offline, etc.)
             console.error("Erro de rede:", networkError);
             uploadMessageBox.textContent = 'Erro ao conectar com o servidor.';
             uploadMessageBox.className = 'message-box error';
