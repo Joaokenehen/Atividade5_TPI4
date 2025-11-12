@@ -20,35 +20,43 @@ FormData
 
 Funcionalidades Implementadas
 Sistema de Autenticação
-Registro de Usuários: Endpoint POST /register para criar novas contas
-Login: Endpoint POST /login com autenticação JWT
-Segurança: Senhas hasheadas com bcrypt
-Token JWT: Gerado após login bem-sucedido
-Upload de Arquivos
-Múltiplos Uploads: Até 10 arquivos por requisição
+Registro de Usuários: Endpoint POST /register para criar novas contas.
 
-Validação:
-Apenas imagens .jpeg/.png
-Máximo 5MB por arquivo
-Armazenamento Seguro:
-Diretório uploads/ com nomes únicos
-Criação automática de diretórios
+Login: Endpoint POST /login com autenticação JWT.
+
+Segurança: Senhas hasheadas com bcrypt.
+
+Token JWT: Gerado após login bem-sucedido.
+
+Controle de UI: O frontend exibe/oculta os formulários de Login/Registro e o painel de Logout com base no estado de autenticação (presença do token).
+
+Função de Logout: Permite ao usuário remover o token do localStorage e atualizar a UI.
+
+Upload de Arquivos
+Rota Protegida: A rota /upload agora é protegida por middleware JWT. Apenas requisições com um token de autenticação válido (Authorization: Bearer <token>) podem enviar arquivos.
+
+Múltiplos Uploads: Até 10 arquivos por requisição.
+
+Validação: Apenas imagens .jpeg/.png e máximo 5MB por arquivo.
+
+Armazenamento Seguro: Diretório uploads/ com nomes únicos e criação automática de diretórios.
 
 Frontend
-Interface Moderna:
-Login/Registro com feedback visual
-Upload de arquivos com preview
-Comunicação Assíncrona:
-Login com JWT
-Upload via FormData
-Feedback em Tempo Real:
-Mensagens de sucesso/erro
-Estado dos botões durante operações
-Autenticação Persistente:
-Token JWT armazenado no localStorage
-Verificação de autenticação para uploads
+Interface Moderna: Login/Registro com feedback visual e painel de usuário com botão de "Sair".
+
+Comunicação Assíncrona: Login com JWT e Upload via FormData (enviando o token no cabeçalho Authorization).
+
+Feedback em Tempo Real: Mensagens de sucesso/erro, incluindo feedback de autorização (ex: "Acesso negado") se o upload for tentado sem login.
+
+Autenticação Persistente: Token JWT armazenado no localStorage.
+
 Tratamento de Erros
-Mensagens claras para usuários
-Códigos HTTP apropriados
-Validação tanto no cliente quanto no servidor
+Mensagens claras para usuários: Exibe mensagens de erro vindas do servidor (ex: "Credenciais inválidas", "Token inválido ou expirado").
+
+Códigos HTTP apropriados: O backend retorna códigos como 401 (Não autorizado) ou 403 (Proibido) em falhas de autenticação.
+
+Validação no cliente: Verifica se arquivos foram selecionados antes do envio.
+
+Validação no servidor: O backend rejeita ativamente tentativas de upload não autenticadas.
+
 Este projeto demonstra uma implementação completa de autenticação e upload de arquivos, com foco em segurança e experiência do usuário.
