@@ -57,6 +57,18 @@
         padding: 0.5rem 1rem;
         border-radius: 0.375rem;
         font-weight: 600;
+        transition: background-color 0.2s;
+      }
+      
+      .submit-btn:hover {
+        background: #2563eb;
+      }
+      
+      .logout-btn {
+        background-color: #dc2626; 
+      }
+      .logout-btn:hover {
+        background-color: #b91c1c;
       }
 
       .form-input {
@@ -75,8 +87,8 @@
   </head>
   <body>
     <div class="main-container">
-      <!-- Card de Login -->
-      <div class="card-module">
+
+      <div class="card-module" id="login-module">
         <header>
           <div class="brand">
             <h1 class="text-white text-2xl font-bold">Login</h1>
@@ -104,8 +116,7 @@
         </div>
       </div>
 
-      <!-- Card de Upload -->
-      <div class="card-module">
+      <div class="card-module" id="upload-module">
         <header>
           <div class="brand">
             <h1 class="text-white text-2xl font-bold">Upload de Imagens</h1>
@@ -130,8 +141,7 @@
         </div>
       </div>
 
-      <!-- Card de Registro -->
-      <div class="card-module">
+      <div class="card-module" id="register-module">
         <header>
           <div class="brand">
             <h1 class="text-white text-2xl font-bold">Registro</h1>
@@ -157,124 +167,232 @@
           <div id="registerMessageBox" class="message-box" style="display: none;"></div>
         </div>
       </div>
+      
+      <div class="card-module" id="user-module" style="display: none;">
+        <header>
+          <div class="brand">
+            <h1 class="text-white text-2xl font-bold">Painel do Usuário</h1>
+            <p id="welcome-message" class="text-gray-400">Bem-vindo!</p>
+          </div>
+        </header>
+        <div class="card" style="background: var(--card-bg); border: var(--card-border); padding: 1.5rem; border-radius: 0.5rem;">
+          <button id="logoutButton" class="submit-btn logout-btn w-full">
+            Sair (Logout)
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <script>
-      // Script de Login
-      document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+      document.addEventListener('DOMContentLoaded', () => {
+
+        const loginModule = document.getElementById('login-module');
+        const registerModule = document.getElementById('register-module');
+        const uploadModule = document.getElementById('upload-module');
+        const userModule = document.getElementById('user-module');
         
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const messageBox = document.getElementById('loginMessageBox');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const uploadForm = document.getElementById('uploadForm');
+        
+        const logoutButton = document.getElementById('logoutButton');
+        const welcomeMessage = document.getElementById('welcome-message');
 
-        try {
-          const response = await fetch('http://localhost:3000/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-          });
+        const loginMessageBox = document.getElementById('loginMessageBox');
+        const registerMessageBox = document.getElementById('registerMessageBox');
+        const uploadMessageBox = document.getElementById('messageBox');
 
-          const data = await response.json();
 
-          messageBox.style.display = 'block';
+        function atualizarUI() {
+          const token = localStorage.getItem('token');
+          const username = localStorage.getItem('username');
           
-          if (response.ok) {
-            messageBox.className = 'message-box success';
-            messageBox.textContent = 'Login realizado com sucesso!';
-            localStorage.setItem('token', data.token);
-          } else {
-            messageBox.className = 'message-box error';
-            messageBox.textContent = data.error || 'Credenciais inválidas';
-          }
-        } catch (error) {
-          messageBox.className = 'message-box error';
-          messageBox.textContent = 'Erro ao conectar com o servidor';
-          messageBox.style.display = 'block';
-        }
-      });
+          uploadModule.style.display = 'block';
 
-      // Script de Upload
-      document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+          if (token) {
+            loginModule.style.display = 'none';
+            registerModule.style.display = 'none';
+            userModule.style.display = 'block';
+            welcomeMessage.textContent = `Bem-vindo, ${username || 'Usuário'}!`;
+          } else {
+            loginModule.style.display = 'block';
+            registerModule.style.display = 'block';
+            userModule.style.display = 'none';
+          }
+          
+          loginMessageBox.style.display = 'none';
+          registerMessageBox.style.display = 'none';
+          uploadMessageBox.style.display = 'none';
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const username = document.getElementById('username').value.trim();
+          const password = document.getElementById('password').value.trim();
+
+          try {
+            const response = await fetch('http://localhost:3000/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            loginMessageBox.style.display = 'block';
+            
+            if (response.ok) {
+              loginMessageBox.className = 'message-box success';
+              loginMessageBox.textContent = 'Login realizado com sucesso!';
+              
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('username', data.user.username);
+              
+              atualizarUI();
+            } else {
+              loginMessageBox.className = 'message-box error';
+              loginMessageBox.textContent = data.error || 'Credenciais inválidas';
+            }
+          } catch (error) {
+            loginMessageBox.className = 'message-box error';
+            loginMessageBox.textContent = 'Erro ao conectar com o servidor';
+            loginMessageBox.style.display = 'block';
+          }
+        });
+
+        // --- Script de Upload (Envia a requisição e captura o erro) ---
+       uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const files = document.getElementById('fileInput').files;
-        const messageBox = document.getElementById('messageBox');
-
-        if (files.length === 0) {
-          messageBox.style.display = 'block';
-          messageBox.className = 'message-box error';
-          messageBox.textContent = 'Por favor, selecione pelo menos um arquivo.';
-          return;
-        }
-
+        const token = localStorage.getItem('token');
         const formData = new FormData();
+
+        // 1. VALIDAÇÃO (Isto já funciona para você)
+        if (files.length === 0) {
+            uploadMessageBox.style.display = 'block';
+            uploadMessageBox.className = 'message-box error';
+            uploadMessageBox.textContent = 'Por favor, selecione pelo menos um arquivo.';
+            return;
+        }
+
+        // Validação de login
+        if (!token) {
+            uploadMessageBox.style.display = 'block';
+            uploadMessageBox.className = 'message-box error';
+            uploadMessageBox.textContent = 'Acesso negado. Token não fornecido. Por favor, faça login primeiro.';
+            return;
+        }
+
+        // Prepara os arquivos
         for (let i = 0; i < files.length; i++) {
-          formData.append('meusArquivos', files[i]);
+            formData.append('meusArquivos', files[i]);
         }
 
         try {
-          const response = await fetch('http://localhost:3000/upload', {
-            method: 'POST',
-            body: formData
-          });
+            // 2. Tenta enviar para o servidor
+            const response = await fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
 
-          const data = await response.json();
+            // 3. VERIFICA SE A RESPOSTA NÃO FOI OK (ex: 401, 403, 500)
+            if (!response.ok) {
+                // O servidor respondeu com erro (ex: 401 - Não Autorizado)
+                let errorMessage = 'Erro ao enviar. Tente fazer login novamente.'; // Mensagem padrão
+                
+                try {
+                    // Tenta ler o JSON de erro que o server.js enviou
+                    const data = await response.json();
+                    if (data.error) {
+                        errorMessage = data.error; // Ex: "Acesso negado. Token não fornecido."
+                    }
+                } catch (jsonError) {
+                    // Se o servidor enviar um erro sem JSON, caímos aqui
+                    console.error("Não foi possível ler o JSON da resposta de erro:", jsonError);
+                }
 
-          messageBox.style.display = 'block';
-          
-          if (response.ok) {
-            messageBox.className = 'message-box success';
-            messageBox.textContent = 'Arquivos enviados com sucesso!';
-            document.getElementById('uploadForm').reset();
-          } else {
-            messageBox.className = 'message-box error';
-            messageBox.textContent = data.error || 'Erro ao enviar arquivos';
-          }
-        } catch (error) {
-          messageBox.style.display = 'block';
-          messageBox.className = 'message-box error';
-          messageBox.textContent = 'Erro ao conectar com o servidor';
+                // 4. MOSTRA A MENSAGEM DE ERRO (EM VERMELHO) NO FRONTEND
+                uploadMessageBox.textContent = errorMessage;
+                uploadMessageBox.className = 'message-box error';
+                uploadMessageBox.style.display = 'block';
+
+                // 5. Se o erro for de autorização, desloga o usuário da UI
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    atualizarUI();
+                }
+                return; // Para a execução aqui
+            }
+
+            // 6. SE A RESPOSTA FOI OK (Sucesso 200)
+            const data = await response.json();
+            uploadMessageBox.textContent = data.message || 'Arquivos enviados com sucesso!';
+            uploadMessageBox.className = 'message-box success';
+            uploadMessageBox.style.display = 'block';
+            uploadForm.reset();
+
+        } catch (networkError) {
+            // 7. Se o 'fetch' falhar (servidor offline, etc.)
+            console.error("Erro de rede:", networkError);
+            uploadMessageBox.textContent = 'Erro ao conectar com o servidor.';
+            uploadMessageBox.className = 'message-box error';
+            uploadMessageBox.style.display = 'block';
         }
-      });
+    });
 
-      // Script de Registro
-      document.getElementById('registerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+        registerForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const username = document.getElementById('registerUsername').value.trim();
+          const email = document.getElementById('registerEmail').value.trim();
+          const password = document.getElementById('registerPassword').value.trim();
+          
+          try {
+            const response = await fetch('http://localhost:3000/register', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username, email, password })
+            });
+
+            const data = await response.json();
+            registerMessageBox.style.display = 'block';
+            
+            if (response.ok) {
+              registerMessageBox.className = 'message-box success';
+              registerMessageBox.textContent = 'Registro realizado com sucesso! Faça o login.';
+              registerForm.reset();
+            } else {
+              registerMessageBox.className = 'message-box error';
+              registerMessageBox.textContent = data.error || 'Erro ao registrar';
+            }
+          } catch (error) {
+            registerMessageBox.style.display = 'block';
+            registerMessageBox.className = 'message-box error';
+            registerMessageBox.textContent = 'Erro ao conectar com o servidor';
+          }
+        });
         
-        const username = document.getElementById('registerUsername').value.trim();
-        const email = document.getElementById('registerEmail').value.trim();
-        const password = document.getElementById('registerPassword').value.trim();
-        const messageBox = document.getElementById('registerMessageBox');
-
-        try {
-          const response = await fetch('http://localhost:3000/register', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, email, password })
-          });
-
-          const data = await response.json();
-
-          messageBox.style.display = 'block';
+        logoutButton.addEventListener('click', () => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('username');
           
-          if (response.ok) {
-            messageBox.className = 'message-box success';
-            messageBox.textContent = 'Registro realizado com sucesso!';
-            document.getElementById('registerForm').reset();
-          } else {
-            messageBox.className = 'message-box error';
-            messageBox.textContent = data.error || 'Erro ao registrar';
-          }
-        } catch (error) {
-          messageBox.style.display = 'block';
-          messageBox.className = 'message-box error';
-          messageBox.textContent = 'Erro ao conectar com o servidor';
-        }
+          loginMessageBox.className = 'message-box success';
+          loginMessageBox.textContent = 'Você saiu com sucesso.';
+          loginMessageBox.style.display = 'block';
+
+          atualizarUI();
+        });
+
+
+        atualizarUI();
       });
     </script>
   </body>

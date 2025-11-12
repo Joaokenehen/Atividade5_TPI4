@@ -1,3 +1,4 @@
+require('dotenv').config(); // Garante que o .env seja lido
 const express = require("express");
 const app = express();
 const port = 3000;
@@ -11,6 +12,31 @@ const userModel = require('./models/userModel'); // Importa o modelo de usuário
 
 app.use(cors());
 app.use(express.json()); 
+
+const jwtSecret = process.env.JWT_SECRET || "your_jwt_secret";
+
+// --- MIDDLEWARE DE AUTENTICAÇÃO ---
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; 
+
+  if (token == null) {
+    return res.status(401).json({ error: "Acesso negado. Token não fornecido." }); 
+  }
+
+  jwt.verify(token, jwtSecret, (err, user) => {
+    if (err) {
+      // Se o token for inválido (expirado, etc.), retorna 403 (Proibido)
+      console.log("Erro na verificação do JWT:", err);
+      return res.status(403).json({ error: "Token inválido ou expirado." });
+    }
+    
+    // Se o token for válido, salva o usuário no 'req' e continua
+    req.user = user;
+    next();
+  });
+};
+// -----------------------------------
 
 
 const createUploadDirectory = (dir) => {
@@ -59,7 +85,11 @@ const upload = multer({
 
 app.get("/", (req, res) => res.send("Servidor de upload e registro funcionando!"));
 
-app.post("/upload", (req, res) => {
+
+// --- ROTA DE UPLOAD PROTEGIDA ---
+app.post("/upload", authenticateToken, (req, res) => {
+  console.log(`Upload autenticado para o usuário:`, req.user);
+
   upload.array("meusArquivos", MAX_FILES)(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === "LIMIT_FILE_COUNT")
@@ -98,9 +128,8 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Este nome de usuário já está em uso." });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10); // 10 é o custo (salt rounds)
+    const passwordHash = await bcrypt.hash(password, 10); 
 
-  
     userModel.addUser({
       username,
       email,
@@ -120,8 +149,6 @@ app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     console.log('Recebido no servidor:', { username, password });
 
-    const jwtSecret = process.env.JWT_SECRET || "your_jwt_secret";
-
     const user = userModel.findByUsername(username);
     console.log('Usuário encontrado:', user);
 
@@ -137,7 +164,7 @@ app.post("/login", async (req, res) => {
     return res.status(200).json({
       message: "Login realizado com sucesso!",
       token: token,
-      user: {
+      user: { 
         username: user.username,
         email: user.email
       }
