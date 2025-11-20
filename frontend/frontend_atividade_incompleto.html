@@ -3,22 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trabalho Completo: Upload, Cadastro e Login</title>
+    <title>Sistema Seguro de Uploads</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
+
       :root {
-        --card-bg: #1e293b;
-        --card-border: 1px solid #334155;
-        --muted: #94a3b8;
+        --glass-bg: rgba(30, 41, 59, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --accent-color: #3b82f6;
       }
       
-      html, body { 
-        height: 100%;
-        background: #0f172a;
+      body { 
+        background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+        color: #f8fafc;
         font-family: 'Inter', sans-serif;
+        min-height: 100vh;
       }
       
+      /* Efeito de Vidro (Glassmorphism) */
+      .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+
       .main-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -28,59 +39,100 @@
       }
 
       .card-module {
-        max-width: 500px;
-        margin: 0 auto;
         width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+        transition: transform 0.3s ease;
+      }
+      
+      .card-module:hover {
+        transform: translateY(-2px);
       }
 
       .message-box {
         padding: 1rem;
         border-radius: 0.5rem;
         margin-top: 1rem;
+        font-size: 0.9rem;
+        animation: fadeIn 0.3s ease-in-out;
       }
 
       .message-box.error {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
+        background-color: rgba(127, 29, 29, 0.5);
+        color: #fca5a5;
+        border: 1px solid #991b1b;
       }
 
       .message-box.success {
-        background-color: #dcfce7;
-        color: #15803d;
-        border: 1px solid #bbf7d0;
-      }
-
-      .submit-btn {
-        background: #3b82f6;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        transition: background-color 0.2s;
-      }
-      
-      .submit-btn:hover {
-        background: #2563eb;
-      }
-      
-      .logout-btn {
-        background-color: #dc2626; 
-      }
-      .logout-btn:hover {
-        background-color: #b91c1c;
+        background-color: rgba(20, 83, 45, 0.5);
+        color: #86efac;
+        border: 1px solid #166534;
       }
 
       .form-input {
         width: 100%;
-        padding: 0.5rem;
-        border-radius: 0.375rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
         margin-bottom: 1rem;
+        background-color: rgba(15, 23, 42, 0.6);
+        border: 1px solid #334155;
+        color: white;
+        transition: all 0.2s;
+      }
+
+      .form-input:focus {
+        border-color: var(--accent-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      }
+
+      .submit-btn {
+        background: var(--accent-color);
+        color: white;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.875rem;
+      }
+      
+      .submit-btn:hover {
+        background: #2563eb;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+      }
+      
+      .logout-btn {
+        background-color: #ef4444; 
+      }
+      .logout-btn:hover {
+        background-color: #dc2626;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+      }
+
+      .role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-top: 0.5rem;
+      }
+      
+      .role-admin { background-color: #7c3aed; color: #ddd6fe; }
+      .role-user { background-color: #059669; color: #a7f3d0; }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
       }
 
       @media (min-width: 1024px) {
         .main-container {
           grid-template-columns: repeat(2, 1fr);
+          align-items: start;
         }
       }
     </style>
@@ -88,97 +140,91 @@
   <body>
     <div class="main-container">
 
+      <!-- Módulo de Login -->
       <div class="card-module" id="login-module">
-        <header>
-          <div class="brand">
-            <h1 class="text-white text-2xl font-bold">Login</h1>
-            <p class="text-gray-400">Entre com suas credenciais</p>
-          </div>
+        <header class="mb-4">
+          <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Login</h1>
+          <p class="text-gray-400 text-sm">Acesse sua conta para gerenciar arquivos</p>
         </header>
 
-        <div class="card" style="background: var(--card-bg); border: var(--card-border); padding: 1.5rem; border-radius: 0.5rem;">
-          <form id="loginForm" class="space-y-4">
+        <div class="glass-card p-6 rounded-xl">
+          <form id="loginForm">
             <div>
-              <input type="text" id="username" name="username" 
-                     class="form-input bg-gray-900 border-gray-700 text-white" 
-                     placeholder="Nome de usuário" required>
+              <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wide">Usuário</label>
+              <input type="text" id="username" name="username" class="form-input" placeholder="Seu usuário..." required>
             </div>
             <div>
-              <input type="password" id="password" name="password" 
-                     class="form-input bg-gray-900 border-gray-700 text-white" 
-                     placeholder="Senha" required>
+              <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wide">Senha</label>
+              <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="submit-btn w-full">
-              Entrar
-            </button>
+            <button type="submit" class="submit-btn w-full mt-2">Entrar</button>
           </form>
           <div id="loginMessageBox" class="message-box" style="display: none;"></div>
         </div>
       </div>
 
-      <div class="card-module" id="upload-module">
-        <header>
-          <div class="brand">
-            <h1 class="text-white text-2xl font-bold">Upload de Imagens</h1>
-            <p class="text-gray-400">Envie suas imagens (PNG, JPG)</p>
-          </div>
+      <!-- Módulo de Upload -->
+      <div class="card-module" id="upload-module" style="display: none;">
+        <header class="mb-4">
+          <h1 class="text-3xl font-bold text-white">Upload Seguro</h1>
+          <p class="text-gray-400 text-sm">Envie imagens (PNG, JPG) - Máx 5MB</p>
         </header>
 
-        <div class="card" style="background: var(--card-bg); border: var(--card-border); padding: 1.5rem; border-radius: 0.5rem;">
+        <div class="glass-card p-6 rounded-xl">
           <form id="uploadForm" class="space-y-4">
-            <input type="file" id="fileInput" name="meusArquivos" multiple accept="image/png, image/jpeg" 
-                   class="block w-full text-sm text-gray-400
-                   file:mr-4 file:py-2 file:px-4
-                   file:rounded-md file:border-0
-                   file:text-sm file:font-semibold
-                   file:bg-blue-500 file:text-white
-                   hover:file:bg-blue-600">
-            <button type="submit" class="submit-btn w-full">
-              Enviar Arquivos
-            </button>
+            <div class="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer relative">
+                <input type="file" id="fileInput" name="meusArquivos" multiple accept="image/png, image/jpeg" 
+                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                <div class="text-gray-400 pointer-events-none">
+                    <svg class="mx-auto h-10 w-10 mb-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    <p class="text-sm">Clique ou arraste arquivos aqui</p>
+                </div>
+            </div>
+            <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
+            <button type="submit" class="submit-btn w-full">Enviar Arquivos</button>
           </form>
           <div id="messageBox" class="message-box" style="display: none;"></div>
         </div>
       </div>
 
+      <!-- Módulo de Registro -->
       <div class="card-module" id="register-module">
-        <header>
-          <div class="brand">
-            <h1 class="text-white text-2xl font-bold">Registro</h1>
-            <p class="text-gray-400">Crie sua conta</p>
-          </div>
+        <header class="mb-4">
+          <h1 class="text-2xl font-bold text-white">Criar Conta</h1>
+          <p class="text-gray-400 text-sm">Junte-se a nós hoje</p>
         </header>
 
-        <div class="card" style="background: var(--card-bg); border: var(--card-border); padding: 1.5rem; border-radius: 0.5rem;">
-          <form id="registerForm" class="space-y-4">
-            <input type="text" id="registerUsername" name="username" 
-                   class="form-input bg-gray-900 border-gray-700 text-white" 
-                   placeholder="Nome de usuário" required>
-            <input type="email" id="registerEmail" name="email" 
-                   class="form-input bg-gray-900 border-gray-700 text-white" 
-                   placeholder="Email" required>
-            <input type="password" id="registerPassword" name="password" 
-                   class="form-input bg-gray-900 border-gray-700 text-white" 
-                   placeholder="Senha" required>
-            <button type="submit" class="submit-btn w-full">
-              Registrar
-            </button>
+        <div class="glass-card p-6 rounded-xl">
+          <form id="registerForm">
+            <input type="text" id="registerUsername" class="form-input" placeholder="Nome de usuário" required>
+            <input type="email" id="registerEmail" class="form-input" placeholder="Email" required>
+            <input type="password" id="registerPassword" class="form-input" placeholder="Senha forte" required>
+            <button type="submit" class="submit-btn w-full bg-slate-700 hover:bg-slate-600">Registrar</button>
           </form>
           <div id="registerMessageBox" class="message-box" style="display: none;"></div>
         </div>
       </div>
       
+      <!-- Painel do Usuário -->
       <div class="card-module" id="user-module" style="display: none;">
-        <header>
-          <div class="brand">
-            <h1 class="text-white text-2xl font-bold">Painel do Usuário</h1>
-            <p id="welcome-message" class="text-gray-400">Bem-vindo!</p>
-          </div>
+        <header class="mb-4">
+          <h1 class="text-2xl font-bold text-white">Painel</h1>
         </header>
-        <div class="card" style="background: var(--card-bg); border: var(--card-border); padding: 1.5rem; border-radius: 0.5rem;">
-          <button id="logoutButton" class="submit-btn logout-btn w-full">
-            Sair (Logout)
-          </button>
+        <div class="glass-card p-6 rounded-xl text-center">
+          <div class="mb-4">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white uppercase mb-2" id="user-avatar">
+              U
+            </div>
+            <h2 id="welcome-message" class="text-xl font-semibold text-white">Bem-vindo!</h2>
+            <span id="user-role-badge" class="role-badge role-user">User</span>
+          </div>
+          
+          <div class="border-t border-slate-700 my-4 pt-4">
+             <p class="text-sm text-gray-400 mb-4">Sessão ativa</p>
+             <button id="logoutButton" class="submit-btn logout-btn w-full">
+               Encerrar Sessão
+             </button>
+          </div>
         </div>
       </div>
 
@@ -186,7 +232,10 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIGURAÇÃO ---
+        const API_BASE_URL = 'http://localhost:3000'; // URL do Backend
 
+        // Elementos DOM
         const loginModule = document.getElementById('login-module');
         const registerModule = document.getElementById('register-module');
         const uploadModule = document.getElementById('upload-module');
@@ -195,37 +244,69 @@
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
         const uploadForm = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const fileListDisplay = document.getElementById('fileList');
         
         const logoutButton = document.getElementById('logoutButton');
         const welcomeMessage = document.getElementById('welcome-message');
+        const userRoleBadge = document.getElementById('user-role-badge');
+        const userAvatar = document.getElementById('user-avatar');
 
         const loginMessageBox = document.getElementById('loginMessageBox');
         const registerMessageBox = document.getElementById('registerMessageBox');
         const uploadMessageBox = document.getElementById('messageBox');
 
+        // UX: Mostrar nomes dos arquivos selecionados
+        fileInput.addEventListener('change', () => {
+            if(fileInput.files.length > 0) {
+                fileListDisplay.innerHTML = `<strong>${fileInput.files.length}</strong> arquivo(s) selecionado(s): <br/>` + 
+                    Array.from(fileInput.files).map(f => `<span class="text-xs text-blue-300">${f.name}</span>`).join(', ');
+            } else {
+                fileListDisplay.innerHTML = '';
+            }
+        });
+
+        function showMessage(element, message, type) {
+            element.style.display = 'block';
+            element.className = `message-box ${type}`;
+            element.textContent = message;
+            setTimeout(() => {
+                element.style.opacity = '0';
+                setTimeout(() => { 
+                    element.style.display = 'none'; 
+                    element.style.opacity = '1';
+                }, 300);
+            }, 5000);
+        }
 
         function atualizarUI() {
           const token = localStorage.getItem('token');
           const username = localStorage.getItem('username');
+          const role = localStorage.getItem('role') || 'user';
           
-          uploadModule.style.display = 'block';
-
           if (token) {
             loginModule.style.display = 'none';
             registerModule.style.display = 'none';
+            
             userModule.style.display = 'block';
-            welcomeMessage.textContent = `Bem-vindo, ${username || 'Usuário'}!`;
+            uploadModule.style.display = 'block'; // Upload visível apenas logado
+            
+            welcomeMessage.textContent = `Olá, ${username}!`;
+            userAvatar.textContent = username.charAt(0).toUpperCase();
+            
+            // Atualiza Badge de Role
+            userRoleBadge.textContent = role;
+            userRoleBadge.className = `role-badge role-${role}`;
+
           } else {
             loginModule.style.display = 'block';
             registerModule.style.display = 'block';
             userModule.style.display = 'none';
+            uploadModule.style.display = 'none';
           }
-          
-          loginMessageBox.style.display = 'none';
-          registerMessageBox.style.display = 'none';
-          uploadMessageBox.style.display = 'none';
         }
 
+        // --- LOGIN (Rota Atualizada) ---
         loginForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           
@@ -233,108 +314,33 @@
           const password = document.getElementById('password').value.trim();
 
           try {
-            const response = await fetch('http://localhost:3000/login', {
+            // ATUALIZAÇÃO REQ 4: /login -> /auth/login
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username, password })
             });
 
             const data = await response.json();
-            loginMessageBox.style.display = 'block';
             
             if (response.ok) {
-              loginMessageBox.className = 'message-box success';
-              loginMessageBox.textContent = 'Login realizado com sucesso!';
-              
               localStorage.setItem('token', data.token);
               localStorage.setItem('username', data.user.username);
+              // Salva o role retornado pelo backend (Req 1)
+              localStorage.setItem('role', data.user.role || 'user');
               
+              showMessage(loginMessageBox, 'Login realizado com sucesso!', 'success');
               atualizarUI();
+              loginForm.reset();
             } else {
-              loginMessageBox.className = 'message-box error';
-              loginMessageBox.textContent = data.error || 'Credenciais inválidas';
+              showMessage(loginMessageBox, data.error || 'Credenciais inválidas', 'error');
             }
           } catch (error) {
-            loginMessageBox.className = 'message-box error';
-            loginMessageBox.textContent = 'Erro ao conectar com o servidor';
-            loginMessageBox.style.display = 'block';
+            showMessage(loginMessageBox, 'Erro de conexão com o servidor', 'error');
           }
         });
 
-       uploadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const files = document.getElementById('fileInput').files;
-        const token = localStorage.getItem('token');
-        const formData = new FormData();
-
-        if (files.length === 0) {
-            uploadMessageBox.style.display = 'block';
-            uploadMessageBox.className = 'message-box error';
-            uploadMessageBox.textContent = 'Por favor, selecione pelo menos um arquivo.';
-            return;
-        }
-
-        if (!token) {
-            uploadMessageBox.style.display = 'block';
-            uploadMessageBox.className = 'message-box error';
-            uploadMessageBox.textContent = 'Acesso negado. Token não fornecido. Por favor, faça login primeiro.';
-            return;
-        }
-
-        for (let i = 0; i < files.length; i++) {
-            formData.append('meusArquivos', files[i]);
-        }
-
-        try {
-            const response = await fetch('http://localhost:3000/upload', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-
-            // 3. VERIFICA SE A RESPOSTA NÃO FOI OK (ex: 401, 403, 500)
-            if (!response.ok) {
-                let errorMessage = 'Erro ao enviar. Tente fazer login novamente.'; // Mensagem padrão
-                
-                try {
-                    const data = await response.json();
-                    if (data.error) {
-                        errorMessage = data.error; 
-                    }
-                } catch (jsonError) {
-                    console.error("Não foi possível ler o JSON da resposta de erro:", jsonError);
-                }
-
-                uploadMessageBox.textContent = errorMessage;
-                uploadMessageBox.className = 'message-box error';
-                uploadMessageBox.style.display = 'block';
-
-                if (response.status === 401 || response.status === 403) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('username');
-                    atualizarUI();
-                }
-                return; 
-            }
-
-            // 6. SE A RESPOSTA FOI OK (Sucesso 200)
-            const data = await response.json();
-            uploadMessageBox.textContent = data.message || 'Arquivos enviados com sucesso!';
-            uploadMessageBox.className = 'message-box success';
-            uploadMessageBox.style.display = 'block';
-            uploadForm.reset();
-
-        } catch (networkError) {
-            console.error("Erro de rede:", networkError);
-            uploadMessageBox.textContent = 'Erro ao conectar com o servidor.';
-            uploadMessageBox.className = 'message-box error';
-            uploadMessageBox.style.display = 'block';
-        }
-    });
-
+        // --- REGISTRO (Rota Atualizada) ---
         registerForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           
@@ -343,44 +349,87 @@
           const password = document.getElementById('registerPassword').value.trim();
           
           try {
-            const response = await fetch('http://localhost:3000/register', {
+            // ATUALIZAÇÃO REQ 4: /register -> /auth/register
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username, email, password })
             });
 
             const data = await response.json();
-            registerMessageBox.style.display = 'block';
             
             if (response.ok) {
-              registerMessageBox.className = 'message-box success';
-              registerMessageBox.textContent = 'Registro realizado com sucesso! Faça o login.';
+              showMessage(registerMessageBox, 'Conta criada! Faça login agora.', 'success');
               registerForm.reset();
             } else {
-              registerMessageBox.className = 'message-box error';
-              registerMessageBox.textContent = data.error || 'Erro ao registrar';
+              showMessage(registerMessageBox, data.error || 'Erro ao registrar', 'error');
             }
           } catch (error) {
-            registerMessageBox.style.display = 'block';
-            registerMessageBox.className = 'message-box error';
-            registerMessageBox.textContent = 'Erro ao conectar com o servidor';
+            showMessage(registerMessageBox, 'Erro de conexão com o servidor', 'error');
           }
+        });
+
+        // --- UPLOAD (Rota Atualizada) ---
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const files = fileInput.files;
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+
+            if (files.length === 0) {
+                showMessage(uploadMessageBox, 'Selecione pelo menos um arquivo.', 'error');
+                return;
+            }
+
+            if (!token) {
+                showMessage(uploadMessageBox, 'Sessão expirada. Faça login novamente.', 'error');
+                atualizarUI();
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                formData.append('meusArquivos', files[i]);
+            }
+
+            try {
+                // ATUALIZAÇÃO REQ 4: /upload -> /file/upload
+                const response = await fetch(`${API_BASE_URL}/file/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.clear();
+                        atualizarUI();
+                        showMessage(uploadMessageBox, 'Sessão inválida. Entre novamente.', 'error');
+                    } else {
+                        showMessage(uploadMessageBox, data.error || 'Erro no upload', 'error');
+                    }
+                    return; 
+                }
+
+                showMessage(uploadMessageBox, `Sucesso! ${data.arquivos.length} arquivo(s) enviado(s).`, 'success');
+                uploadForm.reset();
+                fileListDisplay.innerHTML = '';
+
+            } catch (networkError) {
+                showMessage(uploadMessageBox, 'Erro ao conectar com o servidor.', 'error');
+            }
         });
         
         logoutButton.addEventListener('click', () => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('username');
-          
-          loginMessageBox.className = 'message-box success';
-          loginMessageBox.textContent = 'Você saiu com sucesso.';
-          loginMessageBox.style.display = 'block';
-
+          localStorage.clear();
           atualizarUI();
+          // Opcional: recarregar a página para limpar estados
+          // location.reload();
         });
 
-
+        // Inicialização
         atualizarUI();
       });
     </script>
