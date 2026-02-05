@@ -82,5 +82,5 @@ Bash
 - Acesse o Frontend Abra o arquivo index.html (ou o arquivo principal do frontend) diretamente no navegador ou utilize uma extensão como Live Server.
 
 ## 👨‍💻 Autor
-Desenvolvido com foco em segurança e arquitetura limpa.
+João Gustavo Quennehen - Análise e Desenvolvimento de Sistemas e Desenvolvedor Enthusiast.
 
