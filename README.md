@@ -70,16 +70,17 @@ Este é um projeto full-stack robusto que combina gerenciamento de arquivos com 
    ```bash
    git clone [https://github.com/seu-usuario/seu-projeto.git](https://github.com/seu-usuario/seu-projeto.git)
 
-Instale as dependências do Backend
+2. Instale as dependências do Backend
 
-Bash
-- cd backend
-- npm install
-- Inicie o Servidor
+   ```bash
+   - cd backend
+   - npm install
 
-Bash
-- npm start
-- Acesse o Frontend Abra o arquivo index.html (ou o arquivo principal do frontend) diretamente no navegador ou utilize uma extensão como Live Server.
+3. Inicie o Servidor
+
+   ```bash
+   - npm start
+4. Acesse o Frontend Abra o arquivo index.html (ou o arquivo principal do frontend) diretamente no navegador ou utilize uma extensão como Live Server.
 
 ## 👨‍💻 Autor
 João Gustavo Quennehen - Análise e Desenvolvimento de Sistemas e Desenvolvedor Enthusiast.
